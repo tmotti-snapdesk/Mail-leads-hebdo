@@ -58,11 +58,13 @@ pour que les images s'affichent chez les destinataires (HubSpot, Outlook, Gmail)
 2. **Storage** → **New bucket** → nom `espaces` → coche **Public bucket** → *Save*.
 3. Récupère les identifiants :
    - **Project URL** : menu **Data API** (ou bouton **Connect**) → `https://xxxx.supabase.co`
-   - **Secret key** : **Settings → API Keys** → section **Secret keys** → révèle/copie la clé
-     `sb_secret_…` *(nouveau format ; une ancienne clé `service_role` fonctionne aussi)*
+   - **Clé `service_role`** : **Settings → API Keys** → onglet **« Legacy anon, service_role
+     API keys »** → révèle/copie la clé **`service_role`** (longue, commence par `eyJ…`).
+     ⚠️ **Important** : l'API Storage exige cette clé **JWT `service_role`**. La nouvelle clé
+     `sb_secret_…` est **rejetée** (`403 — JWS Protected Header is invalid`).
 4. Sur Vercel (le projet déployé) → **Settings → Environment Variables**, ajoute :
    - `SUPABASE_URL` = l'URL du projet (ex. `https://xxxx.supabase.co`)
-   - `SUPABASE_SECRET_KEY` = la clé secrète `sb_secret_…`
+   - `SUPABASE_SECRET_KEY` = la clé **`service_role`** (`eyJ…`)
    - `SUPABASE_BUCKET` = `espaces` *(optionnel, valeur par défaut)*
 5. **Redeploy** le projet. Le glisser-déposer héberge désormais les photos automatiquement.
 
