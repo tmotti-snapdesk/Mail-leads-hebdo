@@ -368,9 +368,9 @@ function sectionHeader(title, sub){
     +'</td></tr>';
 }
 function pill(url,label){
-  return '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>'
+  return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
     +'<td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;">'
-    +'<a href="'+esc(url)+'" target="_blank" style="display:inline-block;padding:14px 30px;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:#111;text-decoration:none;border-radius:40px;">'+esc(label)+'</a>'
+    +'<a href="'+esc(url)+'" target="_blank" style="display:block;padding:16px 24px;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(label)+'</a>'
     +'</td></tr></table>';
 }
 function header(){
@@ -390,7 +390,7 @@ function footer(c){
   return '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
     +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px;">'+esc(c.fTitle)+'</p>'
     +'<p style="margin:0 0 18px 0;font-family:'+SD.sans+';font-size:14px;line-height:1.6;color:#fff;">'+nl2br(c.fText)+'</p>'
-    +'<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;"><a href="'+esc(c.fCtaUrl)+'" target="_blank" style="display:inline-block;padding:13px 28px;font-family:'+SD.sans+';font-size:14px;font-weight:700;color:#111;text-decoration:none;border-radius:40px;">'+esc(c.fCta)+'</a></td></tr></table>'
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;"><a href="'+esc(c.fCtaUrl)+'" target="_blank" style="display:block;padding:15px 24px;font-family:'+SD.sans+';font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(c.fCta)+'</a></td></tr></table>'
     +'</td></tr></table></td></tr>'
     +'<tr><td style="padding:28px 32px 34px 32px;" align="center">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:16px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#111;">Snapdesk</p>'
