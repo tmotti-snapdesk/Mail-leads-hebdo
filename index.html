@@ -59,6 +59,11 @@
   .space .sp-body{padding:0 11px 11px;display:none;border-top:1px solid var(--line)}
   .space.open .sp-body{display:block;padding-top:11px}
   .sp-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .showin{display:flex;gap:16px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .showin .cb{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+  .showin input[type=checkbox]{width:16px;height:16px;accent-color:var(--pink);cursor:pointer}
+  .mailtag{display:inline-block;font-size:10px;font-weight:700;width:17px;height:17px;line-height:17px;text-align:center;border-radius:4px;background:#2c313d;color:#6b7280;margin-left:3px}
+  .mailtag.on{background:var(--pink);color:#111}
   .empty{color:var(--muted);text-align:center;padding:18px;font-size:13px;border:1px dashed var(--line);border-radius:var(--radius)}
   .range{display:flex;gap:7px;align-items:center;margin-bottom:8px}
   .range input[type=text]{flex:2}.range input[type=number]{flex:1;max-width:80px}
@@ -398,12 +403,12 @@ function shell(inner, title){
 
 function buildBroker(){
   const c=state.broker;
-  const spaces=state.spaces.slice().sort((a,b)=>(+a.price||0)-(+b.price||0)); // par prix croissant
+  const spaces=state.spaces.filter(s=>s.showBroker!==false).sort((a,b)=>(+a.price||0)-(+b.price||0)); // par prix croissant
   return shell(hero(c,spaces)+gridRows(spaces,true)+footer(c), "brokers");
 }
 function buildClient(){
   const c=state.client;
-  const spaces=state.spaces.slice();
+  const spaces=state.spaces.filter(s=>s.showClient!==false);
   const ranges=(c.ranges||[]).slice().sort((a,b)=>a.min-b.min);
   let body="";
   const used=new Set();
@@ -489,8 +494,16 @@ function renderSpaces(){
       '<div class="sp-head" data-toggle="'+i+'">'
       + (sp.photo?'<img class="thumb" src="'+esc(sp.photo)+'" alt="">':'<div class="thumb"></div>')
       + '<div class="t"><div class="n">'+esc(sp.name||"Nouvelle carte")+'</div><div class="c">'+esc(spSubtitle(sp))+'</div></div>'
+      + '<span class="mailtag b'+(sp.showBroker!==false?' on':'')+'" title="Mail brokers">B</span>'
+      + '<span class="mailtag c'+(sp.showClient!==false?' on':'')+'" title="Mail clients">C</span>'
       + '<span class="caret">▶</span></div>'
       + '<div class="sp-body">'
+      + '<div class="field"><label>Afficher dans quel(s) mail(s)</label>'
+      +   '<div class="showin">'
+      +     '<label class="cb"><input type="checkbox" data-f="showBroker" data-i="'+i+'"'+(sp.showBroker!==false?' checked':'')+'> 📈 Brokers</label>'
+      +     '<label class="cb"><input type="checkbox" data-f="showClient" data-i="'+i+'"'+(sp.showClient!==false?' checked':'')+'> 🏢 Clients</label>'
+      +   '</div>'
+      + '</div>'
       + '<div class="field"><label>Photo (URL)</label><input type="url" data-f="photo" data-i="'+i+'" value="'+esc(sp.photo)+'" placeholder="https://… (vide = fond sauge « Snapdesk »)"></div>'
       + '<div class="field"><label>Nom de l\'espace</label><input type="text" data-f="name" data-i="'+i+'" value="'+esc(sp.name)+'" placeholder="Ex : Le Loft Oberkampf"></div>'
       + '<div class="row">'
@@ -522,15 +535,19 @@ $("#spaceList").addEventListener("click",e=>{
 });
 $("#spaceList").addEventListener("input",e=>{
   const f=e.target.dataset.f; if(!f) return; const i=+e.target.dataset.i;
-  let v=e.target.value; if(f==="workstations"||f==="price") v = v===""?"":(+v||0);
+  let v=e.target.value;
+  if(e.target.type==="checkbox") v=e.target.checked;
+  else if(f==="workstations"||f==="price") v = v===""?"":(+v||0);
   state.spaces[i][f]=v; save();
   const head=e.target.closest(".space").querySelector(".sp-head");
   if(f==="name") head.querySelector(".n").textContent=v||"Nouvelle carte";
   if(["workstations","price","arr"].includes(f)) head.querySelector(".c").textContent=spSubtitle(state.spaces[i]);
+  if(f==="showBroker") head.querySelector(".mailtag.b").classList.toggle("on", v);
+  if(f==="showClient") head.querySelector(".mailtag.c").classList.toggle("on", v);
   renderPreview();
 });
 $("#btnAdd").addEventListener("click",()=>{
-  state.spaces.push({name:"",arr:"",workstations:"",price:"",photo:"",link:"",_open:true});
+  state.spaces.push({name:"",arr:"",workstations:"",price:"",photo:"",link:"",showBroker:true,showClient:true,_open:true});
   save(); renderSpaces(); renderPreview();
   $(".editor").scrollTo({top:$(".editor").scrollHeight,behavior:"smooth"});
 });
@@ -556,8 +573,9 @@ $("#btnFetch").addEventListener("click",async ()=>{
 /* ============ Preview ============ */
 function renderPreview(){
   $("#pv").srcdoc = buildEmail();
-  const n=state.spaces.length;
-  $("#pvInfo").textContent = (state.template==="client"?"Clients":"Brokers")+" · "+n+" espace(s)";
+  const key = state.template==="client" ? "showClient" : "showBroker";
+  const n = state.spaces.filter(s=>s[key]!==false).length;
+  $("#pvInfo").textContent = (state.template==="client"?"Clients":"Brokers")+" · "+n+" espace(s) affiché(s)";
 }
 $("#viewport").addEventListener("click",e=>{
   const b=e.target.closest("[data-w]"); if(!b) return;
