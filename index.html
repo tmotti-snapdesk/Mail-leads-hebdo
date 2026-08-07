@@ -64,6 +64,16 @@
   .showin input[type=checkbox]{width:16px;height:16px;accent-color:var(--pink);cursor:pointer}
   .mailtag{display:inline-block;font-size:10px;font-weight:700;width:17px;height:17px;line-height:17px;text-align:center;border-radius:4px;background:#2c313d;color:#6b7280;margin-left:3px}
   .mailtag.on{background:var(--pink);color:#111}
+  .dropzone{position:relative;border:1.5px dashed var(--line);border-radius:10px;min-height:88px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;cursor:pointer;color:var(--muted);font-size:12px;background:var(--panel-2);overflow:hidden}
+  .dropzone:hover{border-color:var(--pink)}
+  .dropzone.dragover{border-color:var(--pink);background:#241d20;color:var(--text)}
+  .dropzone.has{padding:0;min-height:120px;border-style:solid}
+  .dropzone.has img{width:100%;height:120px;object-fit:cover;display:block}
+  .dropzone .dz-txt{pointer-events:none}
+  .dropzone.has .dz-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;opacity:0;transition:.15s;font-weight:600}
+  .dropzone.has:hover .dz-txt{opacity:1}
+  .dz-rm{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:6px;width:24px;height:24px;cursor:pointer;font-size:12px;z-index:2}
+  .dz-busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);color:#fff;font-size:12px;font-weight:600;z-index:3}
   .empty{color:var(--muted);text-align:center;padding:18px;font-size:13px;border:1px dashed var(--line);border-radius:var(--radius)}
   .range{display:flex;gap:7px;align-items:center;margin-bottom:8px}
   .range input[type=text]{flex:2}.range input[type=number]{flex:1;max-width:80px}
@@ -504,7 +514,16 @@ function renderSpaces(){
       +     '<label class="cb"><input type="checkbox" data-f="showClient" data-i="'+i+'"'+(sp.showClient!==false?' checked':'')+'> 🏢 Clients</label>'
       +   '</div>'
       + '</div>'
-      + '<div class="field"><label>Photo (URL)</label><input type="url" data-f="photo" data-i="'+i+'" value="'+esc(sp.photo)+'" placeholder="https://… (vide = fond sauge « Snapdesk »)"></div>'
+      + '<div class="field"><label>Photo</label>'
+      +   '<div class="dropzone'+(sp.photo?' has':'')+'" data-drop="'+i+'">'
+      +     (sp.photo ? '<img src="'+esc(sp.photo)+'" alt="">' : '')
+      +     '<span class="dz-txt">'+(sp.photo?'Glisser une nouvelle image, ou cliquer':'📷 Glisse une photo ici, ou clique pour choisir')+'</span>'
+      +     (sp.photo ? '<button class="dz-rm" data-rm="'+i+'" title="Retirer la photo">✕</button>' : '')
+      +   '</div>'
+      +   '<input type="file" accept="image/*" class="fileimg" data-file="'+i+'" style="display:none">'
+      +   (sp.photo && String(sp.photo).startsWith("data:") ? '<div class="hint" style="color:#e0a341">⚠ Image intégrée (non hébergée) — pense à configurer Supabase pour HubSpot</div>' : '')
+      +   '<div class="hint">ou coller une URL : <input type="url" data-f="photo" data-i="'+i+'" value="'+(sp.photo && !String(sp.photo).startsWith("data:")?esc(sp.photo):"")+'" placeholder="https://…" style="margin-top:4px"></div>'
+      + '</div>'
       + '<div class="field"><label>Nom de l\'espace</label><input type="text" data-f="name" data-i="'+i+'" value="'+esc(sp.name)+'" placeholder="Ex : Le Loft Oberkampf"></div>'
       + '<div class="row">'
       +   '<div class="field"><label>Arrondissement</label><input type="text" data-f="arr" data-i="'+i+'" value="'+esc(sp.arr)+'" placeholder="Ex : Paris 11e"></div>'
@@ -524,6 +543,10 @@ function renderSpaces(){
   });
 }
 $("#spaceList").addEventListener("click",e=>{
+  const rm=e.target.closest("[data-rm]");
+  if(rm){ e.stopPropagation(); state.spaces[+rm.dataset.rm].photo=""; save(); renderSpaces(); renderPreview(); return; }
+  const dz=e.target.closest("[data-drop]");
+  if(dz){ dz.closest(".sp-body").querySelector('input.fileimg[data-file="'+dz.dataset.drop+'"]').click(); return; }
   const tgl=e.target.closest("[data-toggle]");
   if(tgl && !e.target.closest("input,textarea,button")){ const i=+tgl.dataset.toggle; state.spaces[i]._open=!state.spaces[i]._open; renderSpaces(); return; }
   const del=e.target.closest("[data-del]");
@@ -551,6 +574,58 @@ $("#btnAdd").addEventListener("click",()=>{
   save(); renderSpaces(); renderPreview();
   $(".editor").scrollTo({top:$(".editor").scrollHeight,behavior:"smooth"});
 });
+
+/* ---- Images: drag & drop / file picker / upload Supabase ---- */
+$("#spaceList").addEventListener("change",e=>{
+  const inp=e.target.closest("input.fileimg"); if(!inp) return;
+  const i=+inp.dataset.file, dz=inp.closest(".sp-body").querySelector('[data-drop="'+i+'"]');
+  if(inp.files && inp.files[0]) handleImageFile(inp.files[0], i, dz);
+  inp.value="";
+});
+$("#spaceList").addEventListener("dragover",e=>{ const dz=e.target.closest(".dropzone"); if(dz){ e.preventDefault(); dz.classList.add("dragover"); } });
+$("#spaceList").addEventListener("dragleave",e=>{ const dz=e.target.closest(".dropzone"); if(dz) dz.classList.remove("dragover"); });
+$("#spaceList").addEventListener("drop",e=>{
+  const dz=e.target.closest(".dropzone"); if(!dz) return;
+  e.preventDefault(); dz.classList.remove("dragover");
+  const i=+dz.dataset.drop, f=e.dataTransfer.files && e.dataTransfer.files[0];
+  if(f) handleImageFile(f, i, dz);
+});
+
+function resizeImage(file, maxW, q){
+  return new Promise((res,rej)=>{
+    const img=new Image(), url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const scale=Math.min(1, maxW/img.width);
+      const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+      const c=document.createElement("canvas"); c.width=w; c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      try{ res(c.toDataURL("image/jpeg", q)); }catch(err){ rej(err); }
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error("image illisible")); };
+    img.src=url;
+  });
+}
+async function uploadImage(dataUrl, name, dz){
+  const base64=dataUrl.split(",")[1];
+  if(dz){ const b=dz.querySelector(".dz-busy"); if(b) b.textContent="⏳ Hébergement…"; }
+  const r=await fetch("/api/upload",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({filename:name||"photo.jpg", contentType:"image/jpeg", dataBase64:base64})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok || !d.ok || !d.url) throw new Error(d.error||("HTTP "+r.status));
+  return d.url;
+}
+async function handleImageFile(file, i, dz){
+  if(!file || !file.type || !file.type.startsWith("image/")){ toast("Ce n'est pas une image", true); return; }
+  if(dz){ const o=document.createElement("div"); o.className="dz-busy"; o.textContent="⏳ Traitement…"; dz.appendChild(o); }
+  try{
+    const dataUrl=await resizeImage(file, 1200, 0.85);
+    let finalUrl;
+    try{ finalUrl=await uploadImage(dataUrl, file.name, dz); toast("✅ Photo hébergée sur Supabase"); }
+    catch(err){ finalUrl=dataUrl; toast("Hébergement indispo — image intégrée (à configurer pour HubSpot)", true); }
+    state.spaces[i].photo=finalUrl; save(); renderSpaces(); renderPreview();
+  }catch(e){ toast("Erreur image : "+e.message, true); renderSpaces(); }
+}
 
 /* ============ Live fetch ============ */
 $("#btnFetch").addEventListener("click",async ()=>{

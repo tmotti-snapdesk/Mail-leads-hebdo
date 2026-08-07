@@ -39,9 +39,32 @@ d'espaces), `{{PMIN}}` / `{{PMAX}}` (prix).
 |---|---|
 | `index.html` | Toute l'interface + génération du HTML des mails (aucune dépendance) |
 | `api/generate.js` | Fonction serverless Vercel : récupère la page live **côté serveur** (pas de CORS) et renvoie la liste des espaces en JSON |
+| `api/upload.js` | Fonction serverless Vercel : reçoit une image et l'envoie sur **Supabase Storage** (clé secrète côté serveur), renvoie l'URL publique |
 
 Le rendu HTML est fait **dans le navigateur** : l'édition est instantanée, pas besoin de
 redéployer pour changer un texte.
+
+## Photos — hébergement Supabase (pour HubSpot)
+
+Les photos se déposent en **glisser-déposer** sur chaque carte. Elles sont redimensionnées
+puis **uploadées sur Supabase Storage**, qui renvoie une **URL publique** — indispensable
+pour que les images s'affichent chez les destinataires (HubSpot, Outlook, Gmail).
+
+> Sans Supabase configuré, l'image est **intégrée directement** dans le HTML (data-URI) :
+> pratique pour l'aperçu et le copier-coller Gmail, mais **non fiable via HubSpot/Outlook**.
+
+### Configuration (une seule fois)
+1. Crée un projet sur [supabase.com](https://supabase.com) (gratuit).
+2. **Storage** → **New bucket** → nom `espaces` → coche **Public bucket** → *Save*.
+3. **Project Settings → API** → copie **Project URL** et la clé **`service_role`** (secrète).
+4. Sur Vercel (le projet déployé) → **Settings → Environment Variables**, ajoute :
+   - `SUPABASE_URL` = l'URL du projet (ex. `https://xxxx.supabase.co`)
+   - `SUPABASE_SERVICE_ROLE_KEY` = la clé `service_role`
+   - `SUPABASE_BUCKET` = `espaces` *(optionnel, valeur par défaut)*
+5. **Redeploy** le projet. Le glisser-déposer héberge désormais les photos automatiquement.
+
+> ⚠️ La clé `service_role` ne doit **jamais** être mise dans le navigateur ni committée —
+> uniquement dans les variables d'environnement Vercel.
 
 ## Déployer sur Vercel
 
