@@ -17,6 +17,33 @@ module.exports = async (req, res) => {
   if (req.method === "OPTIONS") return res.status(204).end();
   // Diagnostic (GET) : montre quelles variables le serveur voit (booléens uniquement, aucune valeur secrète)
   if (req.method === "GET") {
+    // ?test=1 : tente un vrai upload d'une image 1x1 et renvoie la réponse EXACTE de Supabase
+    if (req.query && req.query.test) {
+      const U = process.env.SUPABASE_URL;
+      const K = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+      const B = process.env.SUPABASE_BUCKET || "espaces";
+      if (!U || !K) return res.status(200).json({ ok: false, step: "env", error: "URL ou clé manquante" });
+      try {
+        const png = Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==",
+          "base64"
+        );
+        const up = await fetch(`${U}/storage/v1/object/${B}/_diagnostic/test.png`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${K}`, apikey: K, "Content-Type": "image/png", "x-upsert": "true" },
+          body: png,
+        });
+        const body = await up.text();
+        return res.status(200).json({
+          ok: up.ok,
+          supabaseStatus: up.status,
+          supabaseBody: body.slice(0, 400),
+          publicUrl: up.ok ? `${U}/storage/v1/object/public/${B}/_diagnostic/test.png` : null,
+        });
+      } catch (e) {
+        return res.status(200).json({ ok: false, step: "fetch", error: String((e && e.message) || e) });
+      }
+    }
     return res.status(200).json({
       ok: true,
       endpoint: "POST /api/upload",
