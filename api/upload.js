@@ -18,13 +18,15 @@ module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Méthode non autorisée" });
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
-  const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Nouveau format Supabase: clé "secret" (sb_secret_...). On accepte aussi
+  // l'ancien nom service_role pour compatibilité.
+  const KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   const BUCKET = process.env.SUPABASE_BUCKET || "espaces";
 
   if (!SUPABASE_URL || !KEY) {
     return res.status(501).json({
       ok: false,
-      error: "Supabase non configuré (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY manquants)",
+      error: "Supabase non configuré (SUPABASE_URL / SUPABASE_SECRET_KEY manquants)",
     });
   }
 
@@ -51,6 +53,7 @@ module.exports = async (req, res) => {
       method: "POST",
       headers: {
         Authorization: `Bearer ${KEY}`,
+        apikey: KEY,
         "Content-Type": contentType,
         "x-upsert": "true",
         "cache-control": "31536000",

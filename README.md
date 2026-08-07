@@ -56,15 +56,18 @@ pour que les images s'affichent chez les destinataires (HubSpot, Outlook, Gmail)
 ### Configuration (une seule fois)
 1. Crée un projet sur [supabase.com](https://supabase.com) (gratuit).
 2. **Storage** → **New bucket** → nom `espaces` → coche **Public bucket** → *Save*.
-3. **Project Settings → API** → copie **Project URL** et la clé **`service_role`** (secrète).
+3. Récupère les identifiants :
+   - **Project URL** : menu **Data API** (ou bouton **Connect**) → `https://xxxx.supabase.co`
+   - **Secret key** : **Settings → API Keys** → section **Secret keys** → révèle/copie la clé
+     `sb_secret_…` *(nouveau format ; une ancienne clé `service_role` fonctionne aussi)*
 4. Sur Vercel (le projet déployé) → **Settings → Environment Variables**, ajoute :
    - `SUPABASE_URL` = l'URL du projet (ex. `https://xxxx.supabase.co`)
-   - `SUPABASE_SERVICE_ROLE_KEY` = la clé `service_role`
+   - `SUPABASE_SECRET_KEY` = la clé secrète `sb_secret_…`
    - `SUPABASE_BUCKET` = `espaces` *(optionnel, valeur par défaut)*
 5. **Redeploy** le projet. Le glisser-déposer héberge désormais les photos automatiquement.
 
-> ⚠️ La clé `service_role` ne doit **jamais** être mise dans le navigateur ni committée —
-> uniquement dans les variables d'environnement Vercel.
+> ⚠️ La clé secrète ne doit **jamais** être mise dans le navigateur ni committée —
+> uniquement dans les variables d'environnement Vercel (l'upload passe par `api/upload.js`).
 
 ## Déployer sur Vercel
 
