@@ -1,0 +1,9 @@
+{
+  "name": "snapdesk-mails-portefeuille",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Générateur des mails hebdo Snapdesk (portefeuille des espaces) — mail brokers (par prix) et mail clients (par nb de postes).",
+  "engines": {
+    "node": ">=18"
+  }
+}
