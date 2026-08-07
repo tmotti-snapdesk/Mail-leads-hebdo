@@ -15,6 +15,20 @@ module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   if (req.method === "OPTIONS") return res.status(204).end();
+  // Diagnostic (GET) : montre quelles variables le serveur voit (booléens uniquement, aucune valeur secrète)
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      endpoint: "POST /api/upload",
+      envSeen: {
+        SUPABASE_URL: !!process.env.SUPABASE_URL,
+        SUPABASE_SECRET_KEY: !!process.env.SUPABASE_SECRET_KEY,
+        SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        SUPABASE_BUCKET: process.env.SUPABASE_BUCKET || null,
+        urlEndsWithSupabase: /\.supabase\.co\/?$/.test(process.env.SUPABASE_URL || ""),
+      },
+    });
+  }
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Méthode non autorisée" });
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
