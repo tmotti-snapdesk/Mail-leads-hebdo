@@ -339,27 +339,28 @@ function sagePlaceholderBox(h){
     +'<td height="'+h+'" align="center" valign="middle" style="height:'+h+'px;border-radius:12px;">'
     +'<span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table>';
 }
-function metaLine(sp, mb){
+// Nombre de postes — ligne 2, noir gras
+function postesLine(sp, mb){
+  return (+sp.workstations>0) ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:16px;font-weight:700;color:#111;">'+esc(sp.workstations)+' postes</p>' : '';
+}
+// Prix + arrondissement — en gris doux (même style que l'ancienne ligne postes)
+function priceArrLine(sp, mb){
   const bits=[];
-  if(+sp.workstations>0) bits.push(esc(sp.workstations)+' postes');
+  if(+sp.price>0) bits.push(fmtPrice(sp.price));
   if(sp.arr && String(sp.arr).trim()) bits.push(esc(sp.arr));
   return bits.length ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:13px;color:#8b93a1;letter-spacing:.2px;">'+bits.join(' &nbsp;·&nbsp; ')+'</p>' : '';
 }
-function priceLine(sp, mb){
-  // rose de base #E590A1 à ~80% d'opacité sur blanc (cuit en couleur pleine pour l'email)
-  return (+sp.price>0)
-    ? '<p style="margin:0 0 '+mb+'px 0;line-height:1;"><span style="display:inline-block;background-color:#EAA6B4;color:#ffffff;font-family:'+SD.sans+';font-size:13px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.2px;">'+fmtPrice(sp.price)+'</span></p>'
-    : '';
-}
-const seeMore = '<span style="font-family:'+SD.sans+';font-size:12px;font-weight:700;color:#111;text-decoration:none;letter-spacing:.6px;text-transform:uppercase;">Voir l\'espace <span style="color:'+SD.pink+';">&#8594;</span></span>';
+// « Voir l'espace → » — bouton rose, texte blanc gras
+const seeMoreBtn = '<span style="display:inline-block;background-color:'+SD.pink+';color:#ffffff;font-family:'+SD.sans+';font-size:12px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.4px;">Voir l\'espace &#8594;</span>';
 
 function card(sp){
+  const H=160;
   const media = sp.photo
-    ? '<tr><td style="padding:14px 14px 0 14px;font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="238" height="150" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:150px;object-fit:cover;border:0;border-radius:12px;"></td></tr>'
-    : '<tr><td style="padding:14px 14px 0 14px;">'+sagePlaceholderBox(150)+'</td></tr>';
+    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="278" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
+    : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:16px 16px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:16px 16px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
   const body='<tr><td style="padding:16px 18px 18px 18px;">'
-    +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
-    +metaLine(sp,12)+priceLine(sp,14)+seeMore
+    +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
+    +postesLine(sp,4)+priceArrLine(sp,14)+seeMoreBtn
     +'</td></tr>';
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
   return '<a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a>';
@@ -370,8 +371,8 @@ function feature(sp){
     : '<td class="feature-cell" width="45%" valign="middle" style="padding:16px 8px 16px 16px;">'+sagePlaceholderBox(180)+'</td>';
   const txt='<td class="feature-cell" width="55%" valign="middle" style="padding:18px 20px 18px 12px;">'
     +'<p style="margin:0 0 7px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">Le plus grand plateau</p>'
-    +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:23px;font-weight:600;color:#111;letter-spacing:-0.3px;line-height:1.15;">'+esc(sp.name||"Nom de l'espace")+'</p>'
-    +metaLine(sp,12)+priceLine(sp,14)+seeMore+'</td>';
+    +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:23px;font-weight:600;color:#111;letter-spacing:-0.3px;line-height:1.15;">'+esc(sp.name||"Nom de l'espace")+'</p>'
+    +postesLine(sp,4)+priceArrLine(sp,14)+seeMoreBtn+'</td>';
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
