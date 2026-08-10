@@ -416,12 +416,16 @@ function hero(c, spaces){
     +'<tr><td style="padding:26px 34px 10px 34px;" align="left">'+pill(c.ctaUrl,c.ctaLabel)+'</td></tr>'
     +'<tr><td style="padding:26px 34px 6px 34px;"><div style="height:1px;background-color:#ECEAE6;line-height:1px;font-size:0;">&nbsp;</div></td></tr>';
 }
-function footer(c){
-  return '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
-    +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px;">'+esc(c.fTitle)+'</p>'
-    +'<p style="margin:0 0 18px 0;font-family:'+SD.sans+';font-size:14px;line-height:1.6;color:#fff;">'+nl2br(c.fText)+'</p>'
-    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;"><a class="sd-cta" href="'+esc(c.fCtaUrl)+'" target="_blank" style="display:block;padding:15px 24px;font-family:'+SD.sans+';font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(c.fCta)+'</a></td></tr></table>'
-    +'</td></tr></table></td></tr>'
+function footer(c, bare){
+  // bare = true : uniquement le bouton CTA (pas de bloc noir) — utilisé pour le mail brokers
+  const block = bare
+    ? '<tr><td style="padding:22px 34px 8px 34px;">'+pill(c.fCtaUrl, c.fCta)+'</td></tr>'
+    : '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
+      +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px;">'+esc(c.fTitle)+'</p>'
+      +'<p style="margin:0 0 18px 0;font-family:'+SD.sans+';font-size:14px;line-height:1.6;color:#fff;">'+nl2br(c.fText)+'</p>'
+      +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;"><a class="sd-cta" href="'+esc(c.fCtaUrl)+'" target="_blank" style="display:block;padding:15px 24px;font-family:'+SD.sans+';font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(c.fCta)+'</a></td></tr></table>'
+      +'</td></tr></table></td></tr>';
+  return block
     +'<tr><td style="padding:28px 32px 34px 32px;" align="center">'
     +'<img src="'+SD.footerLogo+'" alt="Snapdesk" width="150" style="display:block;margin:0 auto 12px auto;width:150px;max-width:150px;height:auto;border:0;">'
     +'<p style="margin:0 0 10px 0;font-family:'+SD.sans+';font-size:12px;color:#111;">Copyright © '+(new Date().getFullYear())+' Snapdesk, All rights reserved.</p>'
@@ -471,7 +475,8 @@ function buildBroker(){
   const c=state.broker;
   const spaces=state.spaces.filter(s=>s.showBroker!==false);
   // groupé par tranche de postes, trié par prix croissant dans chaque tranche
-  return shell(hero(c,spaces)+buildGrouped(c,spaces,(a,b)=>(+a.price||0)-(+b.price||0))+footer(c), "brokers");
+  // footer "bare" : uniquement le CTA (pas de bloc noir) pour les brokers
+  return shell(hero(c,spaces)+buildGrouped(c,spaces,(a,b)=>(+a.price||0)-(+b.price||0))+footer(c, true), "brokers");
 }
 function buildClient(){
   const c=state.client;
@@ -492,6 +497,10 @@ function bindContent(){
   $("#g_unsub").value=state.unsub; $("#g_unsub").oninput=e=>{state.unsub=e.target.value;save();renderPreview();};
   $("#liveUrl").value=state.liveUrl; $("#liveUrl").oninput=e=>{state.liveUrl=e.target.value;save();};
   $("#contentTitle").textContent = state.template==="client" ? "✏️ Contenu — Mail clients" : "✏️ Contenu — Mail brokers";
+  // Le mail brokers n'a pas de bloc noir → on masque le titre/texte du bloc (seul le bouton compte)
+  const bare = state.template!=="client";
+  $("#f_title").closest(".field").style.display = bare ? "none" : "";
+  $("#f_text").closest(".field").style.display = bare ? "none" : "";
   $("#rangesCard").style.display = "";
   renderRanges();
 }
