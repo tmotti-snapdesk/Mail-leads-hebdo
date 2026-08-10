@@ -344,8 +344,9 @@ function metaLine(sp, mb){
   return bits.length ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:13px;color:#8b93a1;letter-spacing:.2px;">'+bits.join(' &nbsp;·&nbsp; ')+'</p>' : '';
 }
 function priceLine(sp, mb){
+  // rose de base #E590A1 à ~80% d'opacité sur blanc (cuit en couleur pleine pour l'email)
   return (+sp.price>0)
-    ? '<p style="margin:0 0 '+mb+'px 0;line-height:1;"><span style="display:inline-block;background-color:#CB899A;color:#ffffff;font-family:'+SD.sans+';font-size:13px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.2px;">'+fmtPrice(sp.price)+'</span></p>'
+    ? '<p style="margin:0 0 '+mb+'px 0;line-height:1;"><span style="display:inline-block;background-color:#EAA6B4;color:#ffffff;font-family:'+SD.sans+';font-size:13px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.2px;">'+fmtPrice(sp.price)+'</span></p>'
     : '';
 }
 const seeMore = '<span style="font-family:'+SD.sans+';font-size:12px;font-weight:700;color:#111;text-decoration:none;letter-spacing:.6px;text-transform:uppercase;">Voir l\'espace <span style="color:'+SD.pink+';">&#8594;</span></span>';
