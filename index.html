@@ -359,7 +359,7 @@ function card(sp){
     +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
     +metaLine(sp,12)+priceLine(sp,14)+seeMore
     +'</td></tr>';
-  const table='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
+  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
   return '<a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a>';
 }
 function feature(sp){
@@ -370,7 +370,7 @@ function feature(sp){
     +'<p style="margin:0 0 7px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">Le plus grand plateau</p>'
     +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:23px;font-weight:600;color:#111;letter-spacing:-0.3px;line-height:1.15;">'+esc(sp.name||"Nom de l'espace")+'</p>'
     +metaLine(sp,12)+priceLine(sp,14)+seeMore+'</td>';
-  const table='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
+  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
 function row(a,b,first){
@@ -398,7 +398,7 @@ function sectionHeader(title, sub){
 function pill(url,label){
   return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
     +'<td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;">'
-    +'<a href="'+esc(url)+'" target="_blank" style="display:block;padding:16px 24px;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;letter-spacing:.3px;">'+esc(label)+'</a>'
+    +'<a class="sd-cta" href="'+esc(url)+'" target="_blank" style="display:block;padding:16px 24px;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;letter-spacing:.3px;">'+esc(label)+'</a>'
     +'</td></tr></table>';
 }
 function header(){
@@ -418,7 +418,7 @@ function footer(c){
   return '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
     +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px;">'+esc(c.fTitle)+'</p>'
     +'<p style="margin:0 0 18px 0;font-family:'+SD.sans+';font-size:14px;line-height:1.6;color:#fff;">'+nl2br(c.fText)+'</p>'
-    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;"><a href="'+esc(c.fCtaUrl)+'" target="_blank" style="display:block;padding:15px 24px;font-family:'+SD.sans+';font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(c.fCta)+'</a></td></tr></table>'
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;"><a class="sd-cta" href="'+esc(c.fCtaUrl)+'" target="_blank" style="display:block;padding:15px 24px;font-family:'+SD.sans+';font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(c.fCta)+'</a></td></tr></table>'
     +'</td></tr></table></td></tr>'
     +'<tr><td style="padding:28px 32px 34px 32px;" align="center">'
     +'<img src="'+SD.footerLogo+'" alt="Snapdesk" width="150" style="display:block;margin:0 auto 12px auto;width:150px;max-width:150px;height:auto;border:0;">'
@@ -427,6 +427,10 @@ function footer(c){
 }
 function shell(inner, title){
   return '<!-- Snapdesk mail — généré '+esc(title)+' -->\n<style>\n  '+SD.fontImport+'\n'
+    +'  .sd-card{transition:transform .25s ease, box-shadow .25s ease;}\n'
+    +'  .sd-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(20,22,26,0.14)!important;}\n'
+    +'  .sd-cta{transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;}\n'
+    +'  .sd-cta:hover{transform:translateY(-2px);filter:brightness(1.05);box-shadow:0 12px 26px rgba(229,144,161,0.5);}\n'
     +'  @media only screen and (max-width:600px){\n'
     +'    .email-wrap{width:100%!important;border-radius:0!important;}\n'
     +'    .col{display:block!important;width:100%!important;box-sizing:border-box!important;}\n'
