@@ -134,7 +134,7 @@
       <div class="opt" data-tmpl="broker">
         <div class="tag">Mail leads</div>
         <div class="t">📈 Brokers</div>
-        <div class="d">Espaces triés par prix</div>
+        <div class="d">Par tranches, triés par prix</div>
       </div>
       <div class="opt" data-tmpl="client">
         <div class="tag">Mail clients</div>
@@ -254,7 +254,16 @@ const DEFAULT_STATE = {
     ctaLabel:"Voir tous les espaces →", ctaUrl:SD.base,
     fTitle:"On gère, vous placez.",
     fText:"Bureaux opérés clé en main, tout inclus. Vous proposez, Snapdesk s'occupe de l'aménagement et de l'exploitation au quotidien. Une dispo qui colle à un de vos clients ?",
-    fCta:"Planifier une visite", fCtaUrl:SD.base
+    fCta:"Planifier une visite", fCtaUrl:SD.base,
+    ranges:[
+      {label:"", min:10, max:19},
+      {label:"", min:20, max:29},
+      {label:"", min:30, max:49},
+      {label:"", min:50, max:69},
+      {label:"", min:70, max:89},
+      {label:"", min:90, max:119},
+      {label:"", min:120, max:null}
+    ]
   },
   client:{
     eyebrow:"Nos bureaux disponibles",
@@ -443,17 +452,10 @@ function shell(inner, title){
     +header()+inner+'\n    </table>\n  </td></tr>\n</table>\n';
 }
 
-function buildBroker(){
-  const c=state.broker;
-  const spaces=state.spaces.filter(s=>s.showBroker!==false).sort((a,b)=>(+a.price||0)-(+b.price||0)); // par prix croissant
-  return shell(hero(c,spaces)+gridRows(spaces,true)+footer(c), "brokers");
-}
-function buildClient(){
-  const c=state.client;
-  const spaces=state.spaces.filter(s=>s.showClient!==false);
+// Regroupe les espaces par tranche de postes; sortWithin = tri à l'intérieur d'une tranche
+function buildGrouped(c, spaces, sortWithin){
   const ranges=(c.ranges||[]).slice().sort((a,b)=>a.min-b.min);
-  let body="";
-  const used=new Set();
+  let body=""; const used=new Set();
   ranges.forEach(r=>{
     const max = (r.max==null||r.max==="")?Infinity:+r.max;
     const inR = spaces.filter((sp,idx)=>{
@@ -461,22 +463,34 @@ function buildClient(){
       const w=+sp.workstations;
       if(w>=r.min && w<=max){ used.add(idx); return true; }
       return false;
-    }).sort((a,b)=>a.workstations-b.workstations);
+    }).sort(sortWithin);
     if(inR.length){
       const title = (r.label && r.label.trim()) ? r.label : rangeLabel(r);
       const sub   = (r.label && r.label.trim()) ? rangeLabel(r) : "";
       body += sectionHeader(title, sub) + gridRows(inR, false);
     }
   });
-  // espaces hors tranches
-  const rest = spaces.filter((sp,idx)=>!used.has(idx)).sort((a,b)=>a.workstations-b.workstations);
+  const rest = spaces.filter((sp,idx)=>!used.has(idx)).sort(sortWithin);
   if(rest.length){ body += sectionHeader("Autres espaces", "Autres capacités") + gridRows(rest,false); }
-  return shell(hero(c,spaces)+body+footer(c), "clients");
+  return body;
+}
+function buildBroker(){
+  const c=state.broker;
+  const spaces=state.spaces.filter(s=>s.showBroker!==false);
+  // groupé par tranche de postes, trié par prix croissant dans chaque tranche
+  return shell(hero(c,spaces)+buildGrouped(c,spaces,(a,b)=>(+a.price||0)-(+b.price||0))+footer(c), "brokers");
+}
+function buildClient(){
+  const c=state.client;
+  const spaces=state.spaces.filter(s=>s.showClient!==false);
+  // groupé par tranche de postes, trié par nombre de postes croissant
+  return shell(hero(c,spaces)+buildGrouped(c,spaces,(a,b)=>a.workstations-b.workstations)+footer(c), "clients");
 }
 function buildEmail(){ return state.template==="client" ? buildClient() : buildBroker(); }
 
 /* ============ Editor: content fields ============ */
 function currentContent(){ return state.template==="client"?state.client:state.broker; }
+function currentRanges(){ const c=currentContent(); if(!c.ranges) c.ranges=[]; return c.ranges; }
 function bindContent(){
   const c=currentContent();
   const map={ "#c_eyebrow":"eyebrow","#c_h1":"h1","#c_intro":"intro","#c_ctaLabel":"ctaLabel","#c_ctaUrl":"ctaUrl",
@@ -485,8 +499,8 @@ function bindContent(){
   $("#g_unsub").value=state.unsub; $("#g_unsub").oninput=e=>{state.unsub=e.target.value;save();renderPreview();};
   $("#liveUrl").value=state.liveUrl; $("#liveUrl").oninput=e=>{state.liveUrl=e.target.value;save();};
   $("#contentTitle").textContent = state.template==="client" ? "✏️ Contenu — Mail clients" : "✏️ Contenu — Mail brokers";
-  $("#rangesCard").style.display = state.template==="client" ? "" : "none";
-  if(state.template==="client") renderRanges();
+  $("#rangesCard").style.display = "";
+  renderRanges();
 }
 
 /* ============ Editor: template picker ============ */
@@ -498,10 +512,10 @@ document.querySelector(".tmpl").addEventListener("click",e=>{
   state.template=o.dataset.tmpl; save(); renderTmpl(); bindContent(); renderPreview();
 });
 
-/* ============ Editor: ranges (client) ============ */
+/* ============ Editor: ranges (tranches de postes, brokers + clients) ============ */
 function renderRanges(){
   const list=$("#rangeList"); list.innerHTML="";
-  (state.client.ranges||[]).forEach((r,i)=>{
+  currentRanges().forEach((r,i)=>{
     const d=document.createElement("div"); d.className="range";
     d.innerHTML='<input type="text" data-rf="label" data-i="'+i+'" value="'+esc(r.label)+'" placeholder="Nom de la tranche">'
       +'<input type="number" data-rf="min" data-i="'+i+'" value="'+esc(r.min)+'" placeholder="min" min="1">'
@@ -516,14 +530,14 @@ $("#rangeList").addEventListener("input",e=>{
   let v=e.target.value;
   if(f==="min") v=+v||1;
   if(f==="max") v = v===""?null:(+v||null);
-  state.client.ranges[i][f]=v; save(); renderPreview();
+  currentRanges()[i][f]=v; save(); renderPreview();
 });
 $("#rangeList").addEventListener("click",e=>{
   const del=e.target.closest("[data-rdel]"); if(!del) return;
-  state.client.ranges.splice(+del.dataset.rdel,1); save(); renderRanges(); renderPreview();
+  currentRanges().splice(+del.dataset.rdel,1); save(); renderRanges(); renderPreview();
 });
 $("#btnAddRange").addEventListener("click",()=>{
-  state.client.ranges.push({label:"Nouvelle tranche",min:1,max:null}); save(); renderRanges(); renderPreview();
+  currentRanges().push({label:"Nouvelle tranche",min:1,max:null}); save(); renderRanges(); renderPreview();
 });
 
 /* ============ Editor: spaces ============ */
