@@ -332,42 +332,45 @@ function fillTokens(txt, spaces){
 }
 
 /* ============ Email building (email-safe: tables + inline styles) ============ */
-function sagePlaceholder(attrs,h,fs){
-  return '<td '+attrs+' style="height:'+h+'px;background-color:'+SD.sage+';" align="center" valign="middle">'
-    +'<span style="font-family:'+SD.serif+';font-size:'+fs+'px;font-weight:700;color:#111;letter-spacing:1px;text-transform:uppercase;">Snapdesk</span></td>';
+function sagePlaceholderBox(h){
+  return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:12px;"><tr>'
+    +'<td height="'+h+'" align="center" valign="middle" style="height:'+h+'px;border-radius:12px;">'
+    +'<span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table>';
 }
 function metaLine(sp, mb){
   const bits=[];
   if(+sp.workstations>0) bits.push(esc(sp.workstations)+' postes');
   if(sp.arr && String(sp.arr).trim()) bits.push(esc(sp.arr));
-  return bits.length ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:13px;color:#111;">'+bits.join(' · ')+'</p>' : '';
+  return bits.length ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:13px;color:#8b93a1;letter-spacing:.2px;">'+bits.join(' &nbsp;·&nbsp; ')+'</p>' : '';
 }
 function priceLine(sp, mb){
-  return (+sp.price>0) ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:'+SD.pink+';">'+fmtPrice(sp.price)+'</p>' : '';
+  return (+sp.price>0)
+    ? '<p style="margin:0 0 '+mb+'px 0;line-height:1;"><span style="display:inline-block;background-color:#FBEDF1;color:#C65B7C;font-family:'+SD.sans+';font-size:13px;font-weight:700;padding:6px 13px;border-radius:20px;letter-spacing:.2px;">'+fmtPrice(sp.price)+'</span></p>'
+    : '';
 }
-const seeMore = '<span style="font-family:'+SD.sans+';font-size:13px;font-weight:700;color:#111;text-decoration:underline;">Voir l\'espace →</span>';
+const seeMore = '<span style="font-family:'+SD.sans+';font-size:12px;font-weight:700;color:#111;text-decoration:none;letter-spacing:.6px;text-transform:uppercase;">Voir l\'espace <span style="color:'+SD.pink+';">&#8594;</span></span>';
 
 function card(sp){
   const media = sp.photo
-    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="252" height="140" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:140px;object-fit:cover;border:0;"></td></tr>'
-    : '<tr>'+sagePlaceholder('',140,24)+'</tr>';
-  const body='<tr><td style="padding:14px 16px 16px 16px;">'
-    +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;">'+esc(sp.name||"Nom de l'espace")+'</p>'
-    +metaLine(sp,10)+priceLine(sp,12)+seeMore
+    ? '<tr><td style="padding:14px 14px 0 14px;font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="238" height="150" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:150px;object-fit:cover;border:0;border-radius:12px;"></td></tr>'
+    : '<tr><td style="padding:14px 14px 0 14px;">'+sagePlaceholderBox(150)+'</td></tr>';
+  const body='<tr><td style="padding:16px 18px 18px 18px;">'
+    +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
+    +metaLine(sp,12)+priceLine(sp,14)+seeMore
     +'</td></tr>';
-  const table='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid '+SD.sage+';border-radius:14px;overflow:hidden;">'+media+body+'</table>';
+  const table='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
   return '<a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a>';
 }
 function feature(sp){
   const media = sp.photo
-    ? '<td class="feature-cell" width="45%" style="font-size:0;line-height:0;"><img class="feature-img" src="'+esc(sp.photo)+'" width="243" height="160" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:160px;object-fit:cover;border:0;"></td>'
-    : sagePlaceholder('class="feature-cell" width="45%"',160,26);
-  const txt='<td class="feature-cell" width="55%" valign="middle" style="padding:16px 18px;">'
-    +'<p style="margin:0 0 4px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:'+SD.pink+';">Le plus grand plateau</p>'
-    +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:22px;font-weight:600;color:#111;">'+esc(sp.name||"Nom de l'espace")+'</p>'
-    +metaLine(sp,10)+priceLine(sp,12)+seeMore+'</td>';
-  const table='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid '+SD.sage+';border-radius:14px;overflow:hidden;"><tr>'+media+txt+'</tr></table>';
-  return '<tr><td style="padding:0 32px 8px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
+    ? '<td class="feature-cell" width="45%" valign="top" style="padding:16px 8px 16px 16px;font-size:0;line-height:0;"><img class="feature-img" src="'+esc(sp.photo)+'" width="230" height="180" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:180px;object-fit:cover;border:0;border-radius:12px;"></td>'
+    : '<td class="feature-cell" width="45%" valign="middle" style="padding:16px 8px 16px 16px;">'+sagePlaceholderBox(180)+'</td>';
+  const txt='<td class="feature-cell" width="55%" valign="middle" style="padding:18px 20px 18px 12px;">'
+    +'<p style="margin:0 0 7px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">Le plus grand plateau</p>'
+    +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:23px;font-weight:600;color:#111;letter-spacing:-0.3px;line-height:1.15;">'+esc(sp.name||"Nom de l'espace")+'</p>'
+    +metaLine(sp,12)+priceLine(sp,14)+seeMore+'</td>';
+  const table='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
+  return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
 function row(a,b,first){
   const pad = first ? "12px 20px 0 20px" : "0 20px 0 20px";
@@ -385,30 +388,30 @@ function gridRows(spaces, withFeature){
   return rows;
 }
 function sectionHeader(title, sub){
-  const eyebrow = sub ? '<p style="margin:0 0 4px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:'+SD.pink+';">'+esc(sub)+'</p>' : '';
-  return '<tr><td style="padding:26px 32px 2px 32px;">'
+  const eyebrow = sub ? '<p style="margin:0 0 5px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">'+esc(sub)+'</p>' : '';
+  return '<tr><td style="padding:30px 32px 8px 32px;">'
     +eyebrow
-    +'<h2 style="margin:0;font-family:'+SD.serif+';font-size:24px;font-weight:600;color:#111;letter-spacing:-0.3px;">'+esc(title)+'</h2>'
+    +'<h2 style="margin:0;font-family:'+SD.serif+';font-size:23px;font-weight:600;color:#111;letter-spacing:-0.4px;">'+esc(title)+'</h2>'
     +'</td></tr>';
 }
 function pill(url,label){
   return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
     +'<td align="center" bgcolor="'+SD.pink+'" style="border-radius:40px;">'
-    +'<a href="'+esc(url)+'" target="_blank" style="display:block;padding:16px 24px;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;">'+esc(label)+'</a>'
+    +'<a href="'+esc(url)+'" target="_blank" style="display:block;padding:16px 24px;font-family:'+SD.sans+';font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:40px;text-align:center;letter-spacing:.3px;">'+esc(label)+'</a>'
     +'</td></tr></table>';
 }
 function header(){
-  return '<tr><td style="padding:24px 32px;background-color:#111;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
-    +'<td align="left"><img src="'+SD.logo+'" height="26" alt="Snapdesk" style="display:block;height:26px;width:auto;border:0;"></td>'
-    +'<td align="right" style="font-family:'+SD.sans+';font-size:12px;color:#fff;">Bureaux opérés · Paris</td></tr></table></td></tr>';
+  return '<tr><td style="padding:26px 34px;background-color:#111;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
+    +'<td align="left" valign="middle"><img src="'+SD.logo+'" height="26" alt="Snapdesk" style="display:block;height:26px;width:auto;border:0;"></td>'
+    +'<td align="right" valign="middle" style="font-family:'+SD.sans+';font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#c8ccd2;">Bureaux opérés · Paris</td></tr></table></td></tr>';
 }
 function hero(c, spaces){
-  return '<tr><td style="padding:40px 32px 8px 32px;background-color:#fff;">'
-    +'<p style="margin:0 0 10px 0;font-family:'+SD.sans+';font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+SD.pink+';">'+esc(c.eyebrow)+'</p>'
-    +'<h1 class="hero-h1" style="margin:0 0 16px 0;font-family:'+SD.serif+';font-size:36px;line-height:1.15;font-weight:600;letter-spacing:-0.5px;color:#111;">'+nl2br(c.h1)+'</h1>'
-    +'<p style="margin:0;font-family:'+SD.sans+';font-size:16px;line-height:1.6;color:#111;">'+nl2br(fillTokens(c.intro,spaces))+'</p></td></tr>'
-    +'<tr><td style="padding:24px 32px 8px 32px;" align="left">'+pill(c.ctaUrl,c.ctaLabel)+'</td></tr>'
-    +'<tr><td style="padding:24px 32px 4px 32px;"><div style="height:1px;background-color:'+SD.sage+';line-height:1px;font-size:0;">&nbsp;</div></td></tr>';
+  return '<tr><td style="padding:44px 34px 6px 34px;background-color:#fff;">'
+    +'<p style="margin:0 0 14px 0;font-family:'+SD.sans+';font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:'+SD.pink+';">'+esc(c.eyebrow)+'</p>'
+    +'<h1 class="hero-h1" style="margin:0 0 16px 0;font-family:'+SD.serif+';font-size:38px;line-height:1.12;font-weight:600;letter-spacing:-0.8px;color:#111;">'+nl2br(c.h1)+'</h1>'
+    +'<p style="margin:0;font-family:'+SD.sans+';font-size:16px;line-height:1.65;color:#4a515e;">'+nl2br(fillTokens(c.intro,spaces))+'</p></td></tr>'
+    +'<tr><td style="padding:26px 34px 10px 34px;" align="left">'+pill(c.ctaUrl,c.ctaLabel)+'</td></tr>'
+    +'<tr><td style="padding:26px 34px 6px 34px;"><div style="height:1px;background-color:#ECEAE6;line-height:1px;font-size:0;">&nbsp;</div></td></tr>';
 }
 function footer(c){
   return '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
@@ -428,9 +431,9 @@ function shell(inner, title){
     +'    .col{display:block!important;width:100%!important;box-sizing:border-box!important;}\n'
     +'    .feature-cell{display:block!important;width:100%!important;}\n'
     +'    .feature-img{height:200px!important;}\n'
-    +'    .hero-h1{font-size:28px!important;}\n  }\n</style>\n'
+    +'    .hero-h1{font-size:30px!important;letter-spacing:-0.5px!important;}\n  }\n</style>\n'
     +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
-    +'  <tr><td align="center" style="padding:28px 12px;">\n'
+    +'  <tr><td align="center" style="padding:36px 16px;">\n'
     +'    <table class="email-wrap" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#fff;border-radius:18px;overflow:hidden;font-family:'+SD.sans+';">\n'
     +header()+inner+'\n    </table>\n  </td></tr>\n</table>\n';
 }
