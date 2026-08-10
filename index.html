@@ -596,7 +596,6 @@ $("#spaceList").addEventListener("input",e=>{
 $("#btnAdd").addEventListener("click",()=>{
   state.spaces.push({name:"",arr:"",workstations:"",price:"",photo:"",link:"",showBroker:true,showClient:true,_open:true});
   save(); renderSpaces(); renderPreview();
-  $(".editor").scrollTo({top:$(".editor").scrollHeight,behavior:"smooth"});
 });
 
 /* ---- Images: drag & drop / file picker / upload Supabase ---- */
@@ -670,11 +669,24 @@ $("#btnFetch").addEventListener("click",async ()=>{
 });
 
 /* ============ Preview ============ */
+let _pvTimer=null, _pvScroll={x:0,y:0};
 function renderPreview(){
-  $("#pv").srcdoc = buildEmail();
+  const f=$("#pv");
+  // mémorise la position de scroll de l'aperçu pour ne pas "revenir en haut"
+  try{ if(f.contentWindow) _pvScroll={x:f.contentWindow.scrollX||0, y:f.contentWindow.scrollY||0}; }catch(e){}
   const key = state.template==="client" ? "showClient" : "showBroker";
   const n = state.spaces.filter(s=>s[key]!==false).length;
   $("#pvInfo").textContent = (state.template==="client"?"Clients":"Brokers")+" · "+n+" espace(s) affiché(s)";
+  // débounce : on ne recharge l'iframe qu'après une courte pause de frappe
+  clearTimeout(_pvTimer);
+  _pvTimer=setTimeout(()=>{
+    f.srcdoc = buildEmail();
+    // restaure la position de scroll sur plusieurs frames (l'événement load
+    // de srcdoc n'étant pas fiable), sans revenir en haut de l'aperçu
+    let n=12;
+    const poll=()=>{ try{ f.contentWindow.scrollTo(_pvScroll.x, _pvScroll.y); }catch(e){} if(--n>0) requestAnimationFrame(poll); };
+    requestAnimationFrame(poll);
+  }, 160);
 }
 $("#viewport").addEventListener("click",e=>{
   const b=e.target.closest("[data-w]"); if(!b) return;
