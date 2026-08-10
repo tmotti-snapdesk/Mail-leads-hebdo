@@ -88,13 +88,40 @@
   .dlg-body textarea{min-height:360px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:pre}
   .fetchbar{display:flex;gap:8px;align-items:center}
   .fetchbar input{flex:1}
+  /* Auth gate */
+  body.locked > header.app, body.locked > main{display:none}
+  #authGate{position:fixed;inset:0;z-index:1000;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px}
+  body.locked #authGate{display:flex}
+  .authbox{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .authbox .brand{font-weight:700;font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+  .authbox .brand b{color:var(--pink)}
+  .authbox .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .authbox label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px;font-weight:600}
+  .authbox input{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px 12px;font-size:14px;font-family:inherit}
+  .authbox input:focus{outline:none;border-color:var(--pink)}
+  .authbox .btn.primary{width:100%;justify-content:center;margin-top:20px;padding:12px}
+  .authbox .err{color:#ff6b6b;font-size:12px;margin-top:10px;min-height:15px}
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="authGate">
+  <form class="authbox" id="authForm">
+    <div class="brand">Snap<b>desk</b></div>
+    <p class="sub">Accès réservé — connecte-toi pour ouvrir l'outil.</p>
+    <label for="authEmail">Adresse e-mail</label>
+    <input type="email" id="authEmail" autocomplete="username" required placeholder="prenom@snapdesk.co">
+    <label for="authPass">Mot de passe</label>
+    <input type="password" id="authPass" autocomplete="current-password" required placeholder="••••••••">
+    <button type="submit" class="btn primary" id="authBtn">Se connecter</button>
+    <div class="err" id="authErr"></div>
+  </form>
+</div>
 
 <header class="app">
   <div class="brand">Snap<b>desk</b> · Mails portefeuille</div>
   <div class="spacer"></div>
+  <button class="btn ghost small" id="btnLogout" title="Se déconnecter">Déconnexion</button>
   <button class="btn ghost small" id="btnImport" title="Importer une sauvegarde JSON">Importer</button>
   <button class="btn ghost small" id="btnExport" title="Exporter une sauvegarde JSON">Exporter</button>
   <button class="btn ghost small" id="btnReset" title="Repartir des valeurs par défaut">Réinitialiser</button>
@@ -684,6 +711,27 @@ $("#btnExport").addEventListener("click",()=>{const c=structuredClone(state);(c.
 $("#btnImport").addEventListener("click",()=>$("#fileImport").click());
 $("#fileImport").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(structuredClone(DEFAULT_STATE),JSON.parse(r.result));save();initAll();toast("✅ Importé");}catch(err){toast("Fichier invalide",true);}};r.readAsText(f);e.target.value="";});
 $("#btnReset").addEventListener("click",()=>{if(confirm("Repartir des valeurs par défaut ? (sauvegarde locale écrasée)")){state=structuredClone(DEFAULT_STATE);save();initAll();toast("Réinitialisé");}});
+
+/* ============ Auth gate ============ */
+function unlock(){ document.body.classList.remove("locked"); }
+$("#btnLogout").addEventListener("click", ()=>{ localStorage.removeItem("sd_auth"); location.reload(); });
+(function initAuth(){
+  // Pas de blocage en local (fichier ouvert en double-clic), ni si déjà connecté
+  if(location.protocol==="file:" || localStorage.getItem("sd_auth")){ unlock(); return; }
+  $("#authForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const email=$("#authEmail").value.trim(), password=$("#authPass").value;
+    const btn=$("#authBtn"), err=$("#authErr");
+    btn.disabled=true; btn.textContent="Connexion…"; err.textContent="";
+    try{
+      const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+      const d=await r.json().catch(()=>({}));
+      if(r.ok && d.ok && d.token){ localStorage.setItem("sd_auth", d.token); unlock(); }
+      else { err.textContent = d.error || "Identifiants incorrects."; }
+    }catch(e){ err.textContent="Connexion impossible — réessaie."; }
+    finally{ btn.disabled=false; btn.textContent="Se connecter"; }
+  });
+})();
 
 /* ============ Init ============ */
 function initAll(){ renderTmpl(); bindContent(); renderSpaces(); renderPreview(); }
