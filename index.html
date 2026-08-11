@@ -368,9 +368,9 @@ function priceArrLine(sp, mb){
 const seeMoreBtn = '<span style="display:inline-block;background-color:'+SD.pink+';color:#ffffff;font-family:'+SD.sans+';font-size:12px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.4px;">Voir l\'espace &#8594;</span>';
 
 function card(sp){
-  const H=220;
+  const H=250;
   const media = sp.photo
-    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="556" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
+    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="656" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
     : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:16px 16px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:16px 16px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
   const body='<tr><td style="padding:16px 18px 18px 18px;">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
@@ -442,8 +442,8 @@ function shell(inner, title){
     +'<style>'+SD.fontImport+'</style>\n'
     +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
     +'  <tr><td align="center" style="padding:36px 16px;">\n'
-    +'    <!--[if mso]><table role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->\n'
-    +'    <table class="email-wrap" role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#fff;border-radius:18px;overflow:hidden;font-family:'+SD.sans+';">\n'
+    +'    <!--[if mso]><table role="presentation" align="center" width="700" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->\n'
+    +'    <table class="email-wrap" role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:700px;background-color:#fff;border-radius:18px;overflow:hidden;font-family:'+SD.sans+';">\n'
     +header()+inner+'\n    </table>\n'
     +'    <!--[if mso]></td></tr></table><![endif]-->\n'
     +'  </td></tr>\n</table>\n';
