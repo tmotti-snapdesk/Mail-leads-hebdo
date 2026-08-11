@@ -430,17 +430,7 @@ function footer(c, bare){
     +'<p style="margin:0;font-family:'+SD.sans+';font-size:12px;color:#111;">Copyright © '+(new Date().getFullYear())+' Snapdesk, All rights reserved.</p></td></tr>';
 }
 function shell(inner, title){
-  return '<!-- Snapdesk mail — généré '+esc(title)+' -->\n<style>\n  '+SD.fontImport+'\n'
-    +'  .sd-card{transition:transform .25s ease, box-shadow .25s ease;}\n'
-    +'  .sd-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(20,22,26,0.14)!important;}\n'
-    +'  .sd-cta{transition:transform .2s ease, box-shadow .2s ease, filter .2s ease;}\n'
-    +'  .sd-cta:hover{transform:translateY(-2px);filter:brightness(1.05);box-shadow:0 12px 26px rgba(229,144,161,0.5);}\n'
-    +'  @media only screen and (max-width:600px){\n'
-    +'    .email-wrap{width:100%!important;border-radius:0!important;}\n'
-    +'    .col{display:block!important;width:100%!important;box-sizing:border-box!important;}\n'
-    +'    .feature-cell{display:block!important;width:100%!important;}\n'
-    +'    .feature-img{height:200px!important;}\n'
-    +'    .hero-h1{font-size:30px!important;letter-spacing:-0.5px!important;}\n  }\n</style>\n'
+  return '<!-- Snapdesk mail — généré '+esc(title)+' (styles 100% inline) -->\n'
     +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
     +'  <tr><td align="center" style="padding:36px 16px;">\n'
     +'    <table class="email-wrap" role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background-color:#fff;border-radius:18px;overflow:hidden;font-family:'+SD.sans+';">\n'
