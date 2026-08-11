@@ -355,22 +355,22 @@ function sagePlaceholderBox(h){
 }
 // Nombre de postes — ligne 2, noir gras
 function postesLine(sp, mb){
-  return (+sp.workstations>0) ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:16px;font-weight:700;color:#111;">'+esc(sp.workstations)+' postes</p>' : '';
+  return (+sp.workstations>0) ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:16px;line-height:1.3;font-weight:700;color:#111;">'+esc(sp.workstations)+' postes</p>' : '';
 }
 // Prix + arrondissement — en gris doux (même style que l'ancienne ligne postes)
 function priceArrLine(sp, mb){
   const bits=[];
   if(+sp.price>0) bits.push(fmtPrice(sp.price));
   if(sp.arr && String(sp.arr).trim()) bits.push(esc(sp.arr));
-  return bits.length ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:13px;color:#8b93a1;letter-spacing:.2px;">'+bits.join(' &nbsp;·&nbsp; ')+'</p>' : '';
+  return bits.length ? '<p style="margin:0 0 '+mb+'px 0;font-family:'+SD.sans+';font-size:13px;line-height:1.4;color:#8b93a1;letter-spacing:.2px;">'+bits.join(' &nbsp;·&nbsp; ')+'</p>' : '';
 }
 // « Voir l'espace → » — bouton rose, texte blanc gras
 const seeMoreBtn = '<span style="display:inline-block;background-color:'+SD.pink+';color:#ffffff;font-family:'+SD.sans+';font-size:12px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.4px;">Voir l\'espace &#8594;</span>';
 
 function card(sp){
-  const H=250;
+  const H=200;
   const media = sp.photo
-    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="856" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
+    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="390" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
     : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:16px 16px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:16px 16px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
   const body='<tr><td style="padding:16px 18px 18px 18px;">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
@@ -390,10 +390,31 @@ function feature(sp){
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
-// Une seule colonne : chaque carte prend toute la largeur (s'adapte à tous les devices,
-// aucun empilement de colonnes à gérer → responsive garanti avec le même HTML).
+// Grille « fluid hybrid » : 2 cartes par ligne sur desktop, qui repassent
+// automatiquement à 1 carte par ligne sur mobile — SANS media query (donc OK
+// même quand HubSpot/Gmail retire les <style>). Le secret :
+//   • conteneur en font-size:0 (supprime l'espace blanc entre les blocs inline)
+//   • chaque carte = <div display:inline-block; width:100%; max-width:~410px>
+//     → sur large, deux blocs de 410px tiennent côte à côte
+//     → sur étroit, width:100% force chaque bloc à toute la largeur → ils s'empilent
+//   • table fantôme <!--[if mso]--> pour Outlook (qui ignore inline-block)
 function gridRows(spaces){
-  return spaces.map(sp => '<tr><td style="padding:0 22px 22px 22px;">'+card(sp)+'</td></tr>').join('');
+  let out = '<tr><td style="padding:0 12px 4px 12px;">';
+  out += '<!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><![endif]-->';
+  out += '<div style="font-size:0;line-height:0;text-align:center;">';
+  spaces.forEach((sp, i) => {
+    if (i > 0 && i % 2 === 0) out += '<!--[if mso]></tr><tr><![endif]-->';
+    out += '<!--[if mso]><td width="50%" valign="top" style="padding:10px;"><![endif]-->';
+    out += '<div class="sd-col" style="display:inline-block;width:100%;max-width:410px;vertical-align:top;box-sizing:border-box;padding:10px;text-align:left;font-size:14px;line-height:1.4;">'
+        +  card(sp)
+        +  '</div>';
+    out += '<!--[if mso]></td><![endif]-->';
+  });
+  // Si nombre impair, on ferme proprement la dernière cellule mso déjà fermée ci-dessus
+  out += '</div>';
+  out += '<!--[if mso]></tr></table><![endif]-->';
+  out += '</td></tr>';
+  return out;
 }
 function sectionHeader(title, sub){
   const eyebrow = sub ? '<p style="margin:0 0 5px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">'+esc(sub)+'</p>' : '';
