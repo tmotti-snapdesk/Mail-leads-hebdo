@@ -368,9 +368,9 @@ function priceArrLine(sp, mb){
 const seeMoreBtn = '<span style="display:inline-block;background-color:'+SD.pink+';color:#ffffff;font-family:'+SD.sans+';font-size:12px;font-weight:700;padding:9px 16px;border-radius:9px;letter-spacing:.4px;">Voir l\'espace &#8594;</span>';
 
 function card(sp){
-  const H=160;
+  const H=220;
   const media = sp.photo
-    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="278" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
+    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="556" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
     : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:16px 16px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:16px 16px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
   const body='<tr><td style="padding:16px 18px 18px 18px;">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
@@ -390,29 +390,10 @@ function feature(sp){
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
-// Colonnes "fluides" : inline-block (empile sur mobile SANS media query) + fallback Outlook
-function fluidCardCell(sp){
-  return '<!--[if mso]><td width="50%" valign="top"><![endif]-->'
-    +'<div style="display:inline-block;width:100%;max-width:280px;vertical-align:top;">'
-    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px;">'+card(sp)+'</td></tr></table>'
-    +'</div>'
-    +'<!--[if mso]></td><![endif]-->';
-}
-function fluidRow(a,b){
-  return '<tr><td style="padding:0 20px;">'
-    +'<div style="font-size:0;text-align:center;">'
-    +'<!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><![endif]-->'
-    +fluidCardCell(a)+(b?fluidCardCell(b):'')
-    +'<!--[if mso]></tr></table><![endif]-->'
-    +'</div></td></tr>';
-}
-function gridRows(spaces, withFeature){
-  let feat=null, grid=spaces.slice();
-  if(withFeature && grid.length%2===1){ feat=grid[grid.length-1]; grid=grid.slice(0,-1); }
-  let rows="";
-  for(let i=0;i<grid.length;i+=2) rows+=fluidRow(grid[i], grid[i+1]||null);
-  if(feat) rows+=feature(feat);
-  return rows;
+// Une seule colonne : chaque carte prend toute la largeur (s'adapte à tous les devices,
+// aucun empilement de colonnes à gérer → responsive garanti avec le même HTML).
+function gridRows(spaces){
+  return spaces.map(sp => '<tr><td style="padding:0 22px 22px 22px;">'+card(sp)+'</td></tr>').join('');
 }
 function sectionHeader(title, sub){
   const eyebrow = sub ? '<p style="margin:0 0 5px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">'+esc(sub)+'</p>' : '';
