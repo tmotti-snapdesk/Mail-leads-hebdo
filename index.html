@@ -431,7 +431,8 @@ function footer(c, bare){
 }
 function shell(inner, title){
   return '<!-- Snapdesk mail — généré '+esc(title)+' -->\n'
-    +'<style>@media only screen and (max-width:600px){'
+    +'<style>'+SD.fontImport
+    +'@media only screen and (max-width:600px){'
     +'.email-wrap{width:100%!important;}'
     +'.col{display:block!important;width:100%!important;box-sizing:border-box!important;}'
     +'.hero-h1{font-size:30px!important;letter-spacing:-0.5px!important;}'
