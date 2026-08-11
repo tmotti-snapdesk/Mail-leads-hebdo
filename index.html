@@ -390,18 +390,27 @@ function feature(sp){
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
-function row(a,b,first){
-  const pad = first ? "12px 20px 0 20px" : "0 20px 0 20px";
-  const cellA='<td class="col" width="50%" valign="top" style="padding:12px;">'+card(a)+'</td>';
-  const cellB= b ? '<td class="col" width="50%" valign="top" style="padding:12px;">'+card(b)+'</td>'
-                 : '<td class="col" width="50%" style="padding:12px;">&nbsp;</td>';
-  return '<tr><td style="padding:'+pad+';"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'+cellA+cellB+'</tr></table></td></tr>';
+// Colonnes "fluides" : inline-block (empile sur mobile SANS media query) + fallback Outlook
+function fluidCardCell(sp){
+  return '<!--[if mso]><td width="50%" valign="top"><![endif]-->'
+    +'<div style="display:inline-block;width:100%;max-width:280px;vertical-align:top;">'
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:12px;">'+card(sp)+'</td></tr></table>'
+    +'</div>'
+    +'<!--[if mso]></td><![endif]-->';
+}
+function fluidRow(a,b){
+  return '<tr><td style="padding:0 20px;">'
+    +'<div style="font-size:0;text-align:center;">'
+    +'<!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><![endif]-->'
+    +fluidCardCell(a)+(b?fluidCardCell(b):'')
+    +'<!--[if mso]></tr></table><![endif]-->'
+    +'</div></td></tr>';
 }
 function gridRows(spaces, withFeature){
   let feat=null, grid=spaces.slice();
   if(withFeature && grid.length%2===1){ feat=grid[grid.length-1]; grid=grid.slice(0,-1); }
   let rows="";
-  for(let i=0;i<grid.length;i+=2) rows+=row(grid[i], grid[i+1]||null, i===0);
+  for(let i=0;i<grid.length;i+=2) rows+=fluidRow(grid[i], grid[i+1]||null);
   if(feat) rows+=feature(feat);
   return rows;
 }
@@ -446,17 +455,17 @@ function footer(c, bare){
     +'<p style="margin:0;font-family:'+SD.sans+';font-size:12px;color:#111;">Copyright © '+(new Date().getFullYear())+' Snapdesk, All rights reserved.</p></td></tr>';
 }
 function shell(inner, title){
+  // Responsive assuré par les colonnes fluides (inline-block) — pas de media query.
+  // Le <style> ne sert qu'à charger les polices (ignoré par certains clients = repli Arial).
   return '<!-- Snapdesk mail — généré '+esc(title)+' -->\n'
-    +'<style>'+SD.fontImport
-    +'@media only screen and (max-width:600px){'
-    +'.email-wrap{width:100%!important;}'
-    +'.col{display:block!important;width:100%!important;box-sizing:border-box!important;}'
-    +'.hero-h1{font-size:30px!important;letter-spacing:-0.5px!important;}'
-    +'}</style>\n'
+    +'<style>'+SD.fontImport+'</style>\n'
     +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
     +'  <tr><td align="center" style="padding:36px 16px;">\n'
-    +'    <table class="email-wrap" role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#fff;border-radius:18px;overflow:hidden;font-family:'+SD.sans+';">\n'
-    +header()+inner+'\n    </table>\n  </td></tr>\n</table>\n';
+    +'    <!--[if mso]><table role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->\n'
+    +'    <table class="email-wrap" role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#fff;border-radius:18px;overflow:hidden;font-family:'+SD.sans+';">\n'
+    +header()+inner+'\n    </table>\n'
+    +'    <!--[if mso]></td></tr></table><![endif]-->\n'
+    +'  </td></tr>\n</table>\n';
 }
 
 // Regroupe les espaces par tranche de postes; sortWithin = tri à l'intérieur d'une tranche
