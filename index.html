@@ -370,7 +370,7 @@ const seeMoreBtn = '<span style="display:block;width:100%;box-sizing:border-box;
 function card(sp){
   const H=175;
   const media = sp.photo
-    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="250" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
+    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="320" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
     : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:16px 16px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:16px 16px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
   const body='<tr><td style="padding:16px 18px 18px 18px;">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
@@ -390,33 +390,31 @@ function feature(sp){
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
-// Grille « fluid hybrid » : 2 cartes par ligne sur desktop, qui repassent
-// automatiquement à 1 carte par ligne sur mobile — SANS media query (donc OK
-// même quand HubSpot/Gmail retire les <style>). Le secret :
-//   • conteneur en font-size:0 (supprime l'espace blanc entre les blocs inline)
-//   • chaque carte = <div display:inline-block; width:100%; max-width:~272px>
-//     → dans la largeur d'un mail (~600px), deux blocs de 272px tiennent côte à côte
-//     → sur étroit (mobile), width:100% force chaque bloc à toute la largeur → ils s'empilent
-//   NB : la carte est volontairement ~272px pour que 2 tiennent dans la largeur
-//   contrainte par HubSpot/Gmail (~600px). Plus large, elles repasseraient à 1/ligne.
-//   • table fantôme <!--[if mso]--> pour Outlook (qui ignore inline-block)
+// Grille en VRAI tableau 2 colonnes (<td width="50%">). C'est la seule structure
+// que HubSpot / Gmail / Outlook respectent à coup sûr : les techniques CSS
+// (inline-block, flex) sont réécrites ou supprimées par le nettoyeur HTML de HubSpot,
+// ce qui faisait retomber les cartes en 1 colonne une fois collées.
+//   • largeurs en % + images fluides (width:100%) → le tableau remplit toute la place
+//   • 2 cartes par ligne partout (desktop ET mobile) — sur mobile les 2 colonnes
+//     rétrécissent proportionnellement (pas de media query possible via HubSpot)
+//   • nombre impair : dernière ligne = 1 carte + 1 cellule vide
 function gridRows(spaces){
-  let out = '<tr><td style="padding:0 12px 4px 12px;">';
-  out += '<!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><![endif]-->';
-  out += '<div style="font-size:0;line-height:0;text-align:center;">';
-  spaces.forEach((sp, i) => {
-    if (i > 0 && i % 2 === 0) out += '<!--[if mso]></tr><tr><![endif]-->';
-    out += '<!--[if mso]><td width="50%" valign="top" style="padding:10px;"><![endif]-->';
-    out += '<div class="sd-col" style="display:inline-block;width:100%;max-width:272px;vertical-align:top;box-sizing:border-box;padding:10px;text-align:left;font-size:14px;line-height:1.4;">'
-        +  card(sp)
-        +  '</div>';
-    out += '<!--[if mso]></td><![endif]-->';
-  });
-  // Si nombre impair, on ferme proprement la dernière cellule mso déjà fermée ci-dessus
-  out += '</div>';
-  out += '<!--[if mso]></tr></table><![endif]-->';
-  out += '</td></tr>';
-  return out;
+  let rows = '';
+  for (let i = 0; i < spaces.length; i += 2) {
+    const a = spaces[i], b = spaces[i + 1];
+    rows += '<tr>'
+      +  '<td width="50%" valign="top" style="padding:0 7px 16px 7px;">' + card(a) + '</td>'
+      +  (b
+          ? '<td width="50%" valign="top" style="padding:0 7px 16px 7px;">' + card(b) + '</td>'
+          : '<td width="50%" valign="top" style="padding:0 7px 16px 7px;">&nbsp;</td>')
+      +  '</tr>';
+  }
+  // Table 2 colonnes imbriquée dans une seule cellule pleine largeur
+  // (garde les titres/hero/footer sur toute la largeur).
+  return '<tr><td style="padding:0 18px;">'
+    + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">'
+    + rows
+    + '</table></td></tr>';
 }
 function sectionHeader(title, sub){
   const eyebrow = sub ? '<p style="margin:0 0 5px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">'+esc(sub)+'</p>' : '';
@@ -465,8 +463,8 @@ function shell(inner, title){
     +'<style>'+SD.fontImport+'</style>\n'
     +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
     +'  <tr><td align="center" style="padding:0;">\n'
-    +'    <!--[if mso]><table role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->\n'
-    +'    <table class="email-wrap" role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background-color:#fff;font-family:'+SD.sans+';">\n'
+    +'    <!--[if mso]><table role="presentation" align="center" width="680" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->\n'
+    +'    <table class="email-wrap" role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:680px;background-color:#fff;font-family:'+SD.sans+';">\n'
     +header()+inner+'\n    </table>\n'
     +'    <!--[if mso]></td></tr></table><![endif]-->\n'
     +'  </td></tr>\n</table>\n';
