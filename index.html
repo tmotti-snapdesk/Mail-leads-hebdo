@@ -123,6 +123,7 @@
   <div class="spacer"></div>
   <button class="btn ghost small" id="btnLogout" title="Se déconnecter">Déconnexion</button>
   <button class="btn" id="btnCode">&lt;/&gt; Voir le code</button>
+  <button class="btn" id="btnPreview" title="Générer un lien d'aperçu à ouvrir sur mobile">🔗 Aperçu mobile</button>
   <button class="btn primary" id="btnCopy">📋 Copier le HTML</button>
 </header>
 
@@ -222,6 +223,21 @@
   <div class="dlg-body">
     <p class="hint" style="margin-top:0">Colle ce code dans un <b>module HTML</b> ou un <b>coded email template</b> HubSpot. Pour un collage direct dans Gmail, utilise le bouton <b>« Copier le HTML »</b> en haut (copie le rendu).</p>
     <textarea id="codeArea" readonly spellcheck="false"></textarea>
+  </div>
+</dialog>
+
+<dialog id="previewDlg">
+  <div class="dlg-head">
+    <h3>🔗 Lien d'aperçu du mail</h3><div class="spacer"></div>
+    <button class="btn small ghost" id="pvDlgClose">Fermer</button>
+  </div>
+  <div class="dlg-body">
+    <p class="hint" style="margin-top:0">Ouvre ce lien <b>sur ton téléphone</b> pour voir le rendu réel — il s'adapte à l'écran (balise viewport incluse). Lien public, à régénérer après chaque modification.</p>
+    <input type="text" id="pvLink" readonly style="width:100%">
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn primary" id="pvCopy">📋 Copier le lien</button>
+      <a class="btn" id="pvOpen" href="#" target="_blank">↗ Ouvrir dans un onglet</a>
+    </div>
   </div>
 </dialog>
 
@@ -738,6 +754,31 @@ $("#dlgClose").addEventListener("click",()=>$("#codeDlg").close());
 $("#dlgCopy").addEventListener("click",async ()=>{ try{await navigator.clipboard.writeText($("#codeArea").value);toast("✅ Code copié");}catch(e){$("#codeArea").select();document.execCommand("copy");toast("✅ Code copié");} });
 $("#dlgDownload").addEventListener("click",()=>dl(buildEmail(),"snapdesk-mail-"+state.template+".html","text/html"));
 function dl(content,name,type){const b=new Blob([content],{type});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+
+/* ============ Aperçu mobile (lien hébergé) ============ */
+// Document HTML complet (avec balise viewport) pour un rendu responsive réel sur mobile
+function standaloneDoc(){
+  return '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">'
+    +'<meta name="viewport" content="width=device-width, initial-scale=1">'
+    +'<meta http-equiv="X-UA-Compatible" content="IE=edge">'
+    +'<title>Aperçu — '+(state.template==="client"?"Mail clients":"Mail brokers")+' Snapdesk</title></head>'
+    +'<body style="margin:0;padding:0;">'+buildEmail()+'</body></html>';
+}
+function b64utf8(str){ return btoa(unescape(encodeURIComponent(str))); }
+async function makePreviewLink(){
+  const btn=$("#btnPreview"); const old=btn.textContent; btn.disabled=true; btn.textContent="⏳ Génération…";
+  try{
+    const r=await fetch("/api/upload",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({filename:"apercu-"+state.template+".html", contentType:"text/html", dataBase64:b64utf8(standaloneDoc())})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok||!d.url) throw new Error(d.error||("HTTP "+r.status));
+    $("#pvLink").value=d.url; $("#pvOpen").href=d.url; $("#previewDlg").showModal();
+  }catch(e){ toast("Aperçu impossible ("+e.message+") — Supabase requis (déployé)", true); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+$("#btnPreview").addEventListener("click", makePreviewLink);
+$("#pvDlgClose").addEventListener("click",()=>$("#previewDlg").close());
+$("#pvCopy").addEventListener("click",async ()=>{ try{await navigator.clipboard.writeText($("#pvLink").value);toast("✅ Lien copié");}catch(e){$("#pvLink").select();document.execCommand("copy");toast("✅ Lien copié");} });
 
 /* ============ Auth gate ============ */
 function unlock(){ document.body.classList.remove("locked"); }
