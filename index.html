@@ -461,8 +461,8 @@ function shell(inner, title){
   // Le <style> ne sert qu'à charger les polices (ignoré par certains clients = repli Arial).
   return '<!-- Snapdesk mail — généré '+esc(title)+' -->\n'
     +'<style>'+SD.fontImport+'</style>\n'
-    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
-    +'  <tr><td align="center" style="padding:0;">\n'
+    +'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="'+SD.sage+'" style="margin:0;padding:0;background-color:'+SD.sage+';">\n'
+    +'  <tr><td align="center" bgcolor="'+SD.sage+'" style="padding:28px 14px;background-color:'+SD.sage+';">\n'
     +'    <!--[if mso]><table role="presentation" align="center" width="680" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->\n'
     +'    <table class="email-wrap" role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:680px;background-color:#fff;font-family:'+SD.sans+';">\n'
     +header()+inner+'\n    </table>\n'
