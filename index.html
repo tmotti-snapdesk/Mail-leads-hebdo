@@ -368,9 +368,9 @@ function priceArrLine(sp, mb){
 const seeMoreBtn = '<span style="display:block;width:100%;box-sizing:border-box;text-align:center;background-color:'+SD.pink+';color:#ffffff;font-family:'+SD.sans+';font-size:13px;font-weight:700;padding:12px 16px;border-radius:10px;letter-spacing:.4px;">Voir l\'espace &#8594;</span>';
 
 function card(sp){
-  const H=175;
+  const H=250;
   const media = sp.photo
-    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="320" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
+    ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="640" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:16px 16px 0 0;"></td></tr>'
     : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:16px 16px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:16px 16px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
   const body='<tr><td style="padding:16px 18px 18px 18px;">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
@@ -390,31 +390,13 @@ function feature(sp){
   const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
-// Grille en VRAI tableau 2 colonnes (<td width="50%">). C'est la seule structure
-// que HubSpot / Gmail / Outlook respectent à coup sûr : les techniques CSS
-// (inline-block, flex) sont réécrites ou supprimées par le nettoyeur HTML de HubSpot,
-// ce qui faisait retomber les cartes en 1 colonne une fois collées.
-//   • largeurs en % + images fluides (width:100%) → le tableau remplit toute la place
-//   • 2 cartes par ligne partout (desktop ET mobile) — sur mobile les 2 colonnes
-//     rétrécissent proportionnellement (pas de media query possible via HubSpot)
-//   • nombre impair : dernière ligne = 1 carte + 1 cellule vide
+// Une seule colonne : chaque carte prend toute la largeur du mail.
+// C'est la mise en page la plus robuste — elle marche partout (HubSpot, Gmail,
+// Outlook, mobile) sans aucune technique CSS que les clients pourraient casser.
 function gridRows(spaces){
-  let rows = '';
-  for (let i = 0; i < spaces.length; i += 2) {
-    const a = spaces[i], b = spaces[i + 1];
-    rows += '<tr>'
-      +  '<td width="50%" valign="top" style="padding:0 7px 16px 7px;">' + card(a) + '</td>'
-      +  (b
-          ? '<td width="50%" valign="top" style="padding:0 7px 16px 7px;">' + card(b) + '</td>'
-          : '<td width="50%" valign="top" style="padding:0 7px 16px 7px;">&nbsp;</td>')
-      +  '</tr>';
-  }
-  // Table 2 colonnes imbriquée dans une seule cellule pleine largeur
-  // (garde les titres/hero/footer sur toute la largeur).
-  return '<tr><td style="padding:0 18px;">'
-    + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">'
-    + rows
-    + '</table></td></tr>';
+  return spaces.map(sp =>
+    '<tr><td style="padding:0 20px 20px 20px;">' + card(sp) + '</td></tr>'
+  ).join('');
 }
 function sectionHeader(title, sub){
   const eyebrow = sub ? '<p style="margin:0 0 5px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">'+esc(sub)+'</p>' : '';
