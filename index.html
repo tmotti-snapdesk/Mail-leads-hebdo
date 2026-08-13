@@ -391,7 +391,7 @@ function card(sp){
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
     +postesLine(sp,4)+priceArrLine(sp,14)+seeMoreBtn
     +'</td></tr>';
-  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
+  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:2px solid #A9BCB7;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
   return '<a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a>';
 }
 function feature(sp){
@@ -402,7 +402,7 @@ function feature(sp){
     +'<p style="margin:0 0 7px 0;font-family:'+SD.sans+';font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:'+SD.pink+';">Le plus grand plateau</p>'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:23px;font-weight:600;color:#111;letter-spacing:-0.3px;line-height:1.15;">'+esc(sp.name||"Nom de l'espace")+'</p>'
     +postesLine(sp,4)+priceArrLine(sp,14)+seeMoreBtn+'</td>';
-  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ECEAE6;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
+  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:2px solid #A9BCB7;border-radius:16px;box-shadow:0 8px 24px rgba(20,22,26,0.06);"><tr>'+media+txt+'</tr></table>';
   return '<tr><td style="padding:0 32px 10px 32px;"><a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a></td></tr>';
 }
 // Une seule colonne : chaque carte prend toute la largeur du mail.
