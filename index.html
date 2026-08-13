@@ -393,7 +393,10 @@ function card(sp){
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
     +postesLine(sp,4)+priceArrLine(sp,14)+seeMoreBtn
     +'</td></tr>';
-  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(20,22,26,0.06);">'+media+body+'</table>';
+  // Coins arrondis fiables à l'envoi : on arrondit l'IMAGE (haut) et le BLOC BLANC (bas)
+  // directement — pas d'overflow:hidden ni de box-shadow sur le <table> (non fiables dans
+  // Gmail/Outlook, à l'origine du bug de coin). Le fond blanc de la page complète les coins.
+  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">'+media+body+'</table>';
   return '<a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a>';
 }
 function feature(sp){
