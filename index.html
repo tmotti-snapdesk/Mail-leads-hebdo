@@ -388,15 +388,14 @@ function card(sp){
   const media = sp.photo
     ? '<tr><td style="font-size:0;line-height:0;"><img src="'+esc(sp.photo)+'" width="640" height="'+H+'" alt="'+esc(sp.name)+'" style="display:block;width:100%;height:'+H+'px;object-fit:cover;border:0;border-radius:10px 10px 0 0;"></td></tr>'
     : '<tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:'+SD.sage+';border-radius:10px 10px 0 0;"><tr><td height="'+H+'" align="center" valign="middle" style="height:'+H+'px;border-radius:10px 10px 0 0;"><span style="font-family:'+SD.serif+';font-size:24px;font-weight:700;color:#111;letter-spacing:1.5px;text-transform:uppercase;">Snapdesk</span></td></tr></table></td></tr>';
-  // Bordure fine, vert clair, uniquement autour du bloc contenu (du bas de l'image jusqu'en bas)
-  const body='<tr><td style="padding:16px 18px 18px 18px;background-color:#ffffff;border-left:1px solid #CBD7D2;border-right:1px solid #CBD7D2;border-bottom:1px solid #CBD7D2;border-radius:0 0 10px 10px;">'
+  const body='<tr><td style="padding:16px 18px 18px 18px;background-color:#ffffff;border-radius:0 0 10px 10px;">'
     +'<p style="margin:0 0 6px 0;font-family:'+SD.serif+';font-size:19px;font-weight:600;color:#111;letter-spacing:-0.2px;line-height:1.2;">'+esc(sp.name||"Nom de l'espace")+'</p>'
     +postesLine(sp,4)+priceArrLine(sp,14)+seeMoreBtn
     +'</td></tr>';
-  // Coins arrondis fiables à l'envoi : on arrondit l'IMAGE (haut) et le BLOC BLANC (bas)
-  // directement — pas d'overflow:hidden ni de box-shadow sur le <table> (non fiables dans
-  // Gmail/Outlook, à l'origine du bug de coin). Le fond blanc de la page complète les coins.
-  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">'+media+body+'</table>';
+  // Coins arrondis fiables à l'envoi : bordure fine + border-radius portés par le TABLE
+  // (avec border-collapse:separate, indispensable pour que Gmail arrondisse les coins).
+  // L'image (haut) et le bloc blanc (bas) ont le même rayon → carte arrondie sur les 4 coins.
+  const table='<table class="sd-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #CBD7D2;border-radius:10px;border-collapse:separate;">'+media+body+'</table>';
   return '<a href="'+esc(ficheUrl(sp))+'" target="_blank" style="display:block;text-decoration:none;color:#111;">'+table+'</a>';
 }
 function feature(sp){
