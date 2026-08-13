@@ -193,6 +193,7 @@
     <!-- FOOTER BLOCK -->
     <div class="card">
       <h2>✉️ Bloc de bas de page</h2>
+      <div class="field" id="fBlockToggleWrap"><label class="cb"><input type="checkbox" id="f_showBlock"> Afficher l'encadré noir (titre + texte)</label></div>
       <div class="field"><label>Titre du bloc</label><input type="text" id="f_title"></div>
       <div class="field"><label>Texte du bloc</label><textarea id="f_text"></textarea></div>
       <div class="field"><label>Boutons du bas (CTA)</label>
@@ -454,7 +455,9 @@ function footer(c, bare){
     (idx ? '<div style="height:10px;line-height:10px;font-size:0;">&nbsp;</div>' : '')
     + pill(cta.url||SD.base, cta.label||'')
   ).join('');
-  const block = bare
+  // Encadré noir masqué si bare (brokers) OU si l'utilisateur l'a décoché (showFBlock=false)
+  const showBox = !bare && c.showFBlock !== false;
+  const block = !showBox
     ? (pills ? '<tr><td style="padding:22px 34px 8px 34px;">'+pills+'</td></tr>' : '')
     : '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
       +'<p style="margin:0 0 8px 0;font-family:'+SD.serif+';font-size:22px;font-weight:600;color:#fff;letter-spacing:-0.3px;">'+esc(c.fTitle)+'</p>'
@@ -528,10 +531,16 @@ function bindContent(){
   renderCtas();
   $("#liveUrl").value=state.liveUrl; $("#liveUrl").oninput=e=>{state.liveUrl=e.target.value;save();};
   $("#contentTitle").textContent = state.template==="client" ? "✏️ Contenu — Mail clients" : "✏️ Contenu — Mail brokers";
-  // Le mail brokers n'a pas de bloc noir → on masque le titre/texte du bloc (seul le bouton compte)
+  // Le mail brokers n'a jamais de bloc noir. Pour le mail clients, l'encadré noir
+  // est optionnel (case à cocher « Afficher l'encadré noir »).
   const bare = state.template!=="client";
-  $("#f_title").closest(".field").style.display = bare ? "none" : "";
-  $("#f_text").closest(".field").style.display = bare ? "none" : "";
+  const showBlockEl = $("#f_showBlock");
+  showBlockEl.checked = c.showFBlock !== false;
+  showBlockEl.onchange = ()=>{ c.showFBlock = showBlockEl.checked; save(); bindContent(); renderPreview(); };
+  const blockVisible = !bare && c.showFBlock !== false;   // champs titre/texte affichés seulement si l'encadré est actif
+  $("#fBlockToggleWrap").style.display = bare ? "none" : "";   // la case ne concerne que le mail clients
+  $("#f_title").closest(".field").style.display = blockVisible ? "" : "none";
+  $("#f_text").closest(".field").style.display = blockVisible ? "" : "none";
   $("#rangesCard").style.display = "";
   renderRanges();
 }
