@@ -317,11 +317,13 @@ function load(){
   return s;
 }
 // Convertit les anciens champs bouton (ctaLabel/fCta) en listes modifiables topCtas/bottomCtas
+// et fixe l'état par défaut de l'encadré noir (masqué pour brokers, affiché pour clients)
 function migrateCtas(s){
-  [s.broker, s.client].forEach(c=>{
-    if(!c) return;
+  [["broker",false],["client",true]].forEach(([key,defBox])=>{
+    const c=s[key]; if(!c) return;
     if(!Array.isArray(c.topCtas))    c.topCtas    = c.ctaLabel ? [{label:c.ctaLabel, url:c.ctaUrl||SD.base}] : [];
     if(!Array.isArray(c.bottomCtas)) c.bottomCtas = c.fCta     ? [{label:c.fCta,     url:c.fCtaUrl||SD.base}] : [];
+    if(typeof c.showFBlock !== "boolean") c.showFBlock = defBox;
   });
 }
 function merge(base, over){ // shallow-ish merge preserving nested defaults
@@ -450,16 +452,15 @@ function hero(c, spaces){
     +ctaRows(c.topCtas)
     +'<tr><td style="padding:26px 34px 6px 34px;"><div style="height:1px;background-color:rgba(17,17,17,0.12);line-height:1px;font-size:0;">&nbsp;</div></td></tr>';
 }
-function footer(c, bare){
-  // bare = true : pas de bloc noir (mail brokers) — uniquement les boutons CTA du bas
+function footer(c){
   const list = Array.isArray(c.bottomCtas) ? c.bottomCtas : [];
   // Boutons empilés (réutilise pill()), avec un espace entre chaque
   const pills = list.map((cta,idx)=>
     (idx ? '<div style="height:10px;line-height:10px;font-size:0;">&nbsp;</div>' : '')
     + pill(cta.url||SD.base, cta.label||'')
   ).join('');
-  // Encadré noir masqué si bare (brokers) OU si l'utilisateur l'a décoché (showFBlock=false)
-  const showBox = !bare && c.showFBlock !== false;
+  // Encadré noir affiché uniquement si la case est cochée (identique pour brokers et clients)
+  const showBox = c.showFBlock === true;
   const block = !showBox
     ? (pills ? '<tr><td style="padding:22px 34px 8px 34px;">'+pills+'</td></tr>' : '')
     : '<tr><td style="padding:16px 32px 8px 32px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#111;border-radius:14px;"><tr><td style="padding:28px;">'
@@ -512,8 +513,7 @@ function buildBroker(){
   const c=state.broker;
   const spaces=state.spaces.filter(s=>s.showBroker!==false);
   // groupé par tranche de postes, trié par prix croissant dans chaque tranche
-  // footer "bare" : uniquement le CTA (pas de bloc noir) pour les brokers
-  return shell(hero(c,spaces)+buildGrouped(c,spaces,(a,b)=>(+a.price||0)-(+b.price||0))+footer(c, true), "brokers");
+  return shell(hero(c,spaces)+buildGrouped(c,spaces,(a,b)=>(+a.price||0)-(+b.price||0))+footer(c), "brokers");
 }
 function buildClient(){
   const c=state.client;
@@ -534,14 +534,13 @@ function bindContent(){
   renderCtas();
   $("#liveUrl").value=state.liveUrl; $("#liveUrl").oninput=e=>{state.liveUrl=e.target.value;save();};
   $("#contentTitle").textContent = state.template==="client" ? "✏️ Contenu — Mail clients" : "✏️ Contenu — Mail brokers";
-  // Le mail brokers n'a jamais de bloc noir. Pour le mail clients, l'encadré noir
-  // est optionnel (case à cocher « Afficher l'encadré noir »).
-  const bare = state.template!=="client";
+  // L'encadré noir est optionnel sur LES DEUX mails (case « Afficher l'encadré noir »).
+  // Par défaut : masqué pour brokers, affiché pour clients — mais modifiable des deux côtés.
   const showBlockEl = $("#f_showBlock");
-  showBlockEl.checked = c.showFBlock !== false;
+  showBlockEl.checked = c.showFBlock === true;
   showBlockEl.onchange = ()=>{ c.showFBlock = showBlockEl.checked; save(); bindContent(); renderPreview(); };
-  const blockVisible = !bare && c.showFBlock !== false;   // champs titre/texte affichés seulement si l'encadré est actif
-  $("#fBlockToggleWrap").style.display = bare ? "none" : "";   // la case ne concerne que le mail clients
+  const blockVisible = c.showFBlock === true;   // champs titre/texte affichés seulement si l'encadré est actif
+  $("#fBlockToggleWrap").style.display = "";     // la case est disponible sur les deux mails
   $("#f_title").closest(".field").style.display = blockVisible ? "" : "none";
   $("#f_text").closest(".field").style.display = blockVisible ? "" : "none";
   $("#rangesCard").style.display = "";
